@@ -49,3 +49,21 @@ class MemoryStore:
             row.status = "resolved"
             row.final_decision = decision
             return row
+
+    def clear_review(self, analysis_id: str) -> StoredAnalysis:
+        """Take a person's answer back: the document waits for a person again."""
+        with self._lock:
+            row = self.get_analysis(analysis_id)
+            if row is None:
+                raise KeyError("Analysis not found.")
+            row.review = None
+            row.status = "awaiting_person"
+            row.final_decision = row.decision
+            return row
+
+    def delete_analysis(self, analysis_id: str) -> bool:
+        """Remove the result and its review."""
+        with self._lock:
+            before = len(self._rows)
+            self._rows = [r for r in self._rows if r.id != analysis_id]
+            return len(self._rows) < before

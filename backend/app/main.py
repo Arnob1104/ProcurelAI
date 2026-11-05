@@ -145,25 +145,45 @@ async def get_analysis(analysis_id: str):
 
 class ReviewBody(BaseModel):
     decision: str = Field(pattern="^(Approve|Reject)$")
-    note: str
+    note: Optional[str] = None  # optional: the quick buttons in the results list send no reason
     reviewer: Optional[str] = Field(default=None, max_length=80)
 
 
 @app.post("/api/analyses/{analysis_id}/review")
 async def review(analysis_id: str, request: Request):
-    """A person answers a document the system stopped on."""
+    """A person answers a document the system stopped on. They can change their answer later."""
     try:
         body = ReviewBody.model_validate(await request.json())
     except (ValidationError, ValueError):
-        return bad("Choose Approve or Reject and write a short reason.")
-    note = body.note.strip()
-    if len(note) < 5:
-        return bad("Write a short reason (at least 5 characters).")
+        return bad("Choose Approve or Reject.")
+    note = (body.note or "").strip() or "Decided from the results list (no reason written)."
     store = get_store()
     row = await run_in_threadpool(store.get_analysis, analysis_id)
     if row is None:
         return bad("Document not found.", 404)
-    if row.status != "awaiting_person":
-        return bad("This document is not waiting for a person.", 409)
+    if row.decision != "Needs a person to check":
+        return bad("Only a document the system stopped on can be decided by a person.", 409)
     saved = await run_in_threadpool(store.add_review, analysis_id, body.decision, note, (body.reviewer or "").strip() or None)
-    return {"id": saved.id, "finalDecision": saved.final_decision}
+    return {"id": saved.id, "finalDecision": saved.final_decision, "row": dump(saved)}
+
+
+@app.delete("/api/analyses/{analysis_id}/review")
+async def undo_review(analysis_id: str):
+    """Take a person's answer back. The document waits for a person again."""
+    store = get_store()
+    row = await run_in_threadpool(store.get_analysis, analysis_id)
+    if row is None:
+        return bad("Document not found.", 404)
+    if row.review is None:
+        return bad("No person has decided this document.", 409)
+    saved = await run_in_threadpool(store.clear_review, analysis_id)
+    return {"id": saved.id, "finalDecision": saved.final_decision, "row": dump(saved)}
+
+
+@app.delete("/api/analyses/{analysis_id}")
+async def delete_analysis(analysis_id: str):
+    """Remove a result together with its review."""
+    removed = await run_in_threadpool(get_store().delete_analysis, analysis_id)
+    if not removed:
+        return bad("Document not found.", 404)
+    return {"deleted": analysis_id}

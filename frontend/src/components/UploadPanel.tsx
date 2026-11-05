@@ -1,9 +1,9 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { useRouter } from "next/navigation";
 import type { Decision } from "@/lib/types";
 import { DECISION } from "@/lib/format";
+import { useSession } from "@/lib/session";
 
 type Job = {
   name: string;
@@ -14,7 +14,7 @@ type Job = {
 };
 
 export function UploadPanel({ ready, samples }: { ready: boolean; samples: string[] }) {
-  const router = useRouter();
+  const session = useSession();
   const input = useRef<HTMLInputElement>(null);
   const [jobs, setJobs] = useState<Job[]>([]);
   const [busy, setBusy] = useState(false);
@@ -30,13 +30,13 @@ export function UploadPanel({ ready, samples }: { ready: boolean; samples: strin
         const res = await items[n].send();
         const body = await res.json();
         if (!res.ok) throw new Error(body.error ?? "The check failed.");
+        await session.add(body.id);
         setJobs((j) => j.map((x, k) => (k === n ? { ...x, state: "done", decision: body.decision, id: body.id } : x)));
       } catch (e) {
         setJobs((j) => j.map((x, k) => (k === n ? { ...x, state: "error", error: e instanceof Error ? e.message : "The check failed." } : x)));
       }
     }
     setBusy(false);
-    router.refresh();
   }
 
   function uploadFiles(files: FileList | File[]) {

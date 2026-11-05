@@ -22,7 +22,14 @@ export function ResultsTable() {
         </h2>
         {rows.length > 0 && (
           <p className="text-sm text-ink-soft">
-            {rows.length} documents: {count("Approve")} approved, {count("Reject")} rejected, {waiting} waiting for a person
+            {[
+              `${rows.length} ${rows.length === 1 ? "document" : "documents"}`,
+              count("Approve") > 0 && `${count("Approve")} accepted`,
+              count("Reject") > 0 && `${count("Reject")} rejected`,
+              waiting > 0 && `${waiting} waiting for a person`,
+            ]
+              .filter(Boolean)
+              .join(", ")}
           </p>
         )}
       </div>

@@ -41,7 +41,7 @@ export default async function Home() {
     <div className="mx-auto max-w-6xl px-4 pb-20 pt-8 sm:px-6">
       <header className="flex flex-wrap items-start justify-between gap-4">
         <div>
-          <p className="text-sm text-ink-soft">Aamar Garments Ltd (fictional)</p>
+          <p className="text-sm text-ink-soft">ProcurelAI for Aamar Garments Ltd (fictional)</p>
           <h1 className="mt-1 text-4xl font-bold sm:text-5xl">Supplier quote review</h1>
           <p className="mt-3 max-w-xl text-ink-soft">
             Every quotation is read, compared with the purchase request and checked against the company rules in the same eight steps. When the system is not sure, it stops and asks a person.

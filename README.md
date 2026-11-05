@@ -1,4 +1,4 @@
-# Quote desk for Aamar Garments Ltd (fictional)
+# ProcurelAI for Aamar Garments Ltd (fictional)
 
 Reads supplier quotations, compares them with the purchase request, checks them against the company rules, and gives one answer per document: **Approve**, **Reject** or **Needs a person to check**, with the exact text from the document behind every reason. When it is not sure, it stops and asks a person.
 

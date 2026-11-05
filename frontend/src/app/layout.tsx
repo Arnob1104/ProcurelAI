@@ -5,7 +5,7 @@ import "@fontsource-variable/jetbrains-mono";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Quote desk | Aamar Garments Ltd (fictional)",
+  title: "ProcurelAI | Aamar Garments Ltd (fictional)",
   description: "Supplier quotations checked step by step against the purchase request and company rules.",
 };
 

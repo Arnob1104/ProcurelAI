@@ -23,7 +23,7 @@ from .store import get_store  # noqa: E402
 
 MAX_BYTES = 10 * 1024 * 1024
 
-app = FastAPI(title="Quote desk API", version="1.0.0")
+app = FastAPI(title="ProcurelAI API", version="1.0.0")
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[o.strip() for o in os.environ.get("CORS_ORIGINS", "http://localhost:3000").split(",") if o.strip()],

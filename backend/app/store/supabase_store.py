@@ -34,7 +34,11 @@ class SupabaseStore:
 
     @staticmethod
     def _to_stored(r: dict) -> StoredAnalysis:
-        h = (r.get("human_reviews") or [None])[0]
+        # human_reviews is one-to-one with analyses (unique analysis_id), so PostgREST returns
+        # a single object, not a list. Accept both shapes.
+        h = r.get("human_reviews")
+        if isinstance(h, list):
+            h = h[0] if h else None
         review = HumanReview(decision=h["decision"], note=h["note"], reviewer=h.get("reviewer"), created_at=h["created_at"]) if h else None
         return StoredAnalysis(
             id=r["id"], created_at=r["created_at"], status=r["status"], decision=r["decision"],

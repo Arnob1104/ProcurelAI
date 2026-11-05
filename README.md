@@ -1,4 +1,4 @@
-# ProcurelAI for Aamar Garments Ltd (fictional)
+# ProcurelAI
 
 Reads supplier quotations, compares them with the purchase request, checks them against the company rules, and gives one answer per document: **Approve**, **Reject** or **Needs a person to check**, with the exact text from the document behind every reason. When it is not sure, it stops and asks a person.
 
@@ -82,7 +82,9 @@ The only branches are two plain if-checks: stop early if the PDF cannot be read,
 | `GET /api/purchase-request`, `POST` | Read, or replace (CSV file or `{"sample": true}`) |
 | `POST /api/analyze` | Check one PDF (multipart `file`, or `{"sample": "supplier-pack-01.pdf"}`) |
 | `GET /api/analyses`, `GET /api/analyses/{id}` | Results |
-| `POST /api/analyses/{id}/review` | A person's Approve or Reject with a reason |
+| `POST /api/analyses/{id}/review` | A person's Approve or Reject (reason optional). Can be sent again to change the answer |
+| `DELETE /api/analyses/{id}/review` | Take the person's answer back (the document waits again) |
+| `DELETE /api/analyses/{id}` | Delete a result together with its review |
 
 The browser only talks to Next.js. `frontend/next.config.ts` forwards `/api/*` to FastAPI (`API_URL`), so no CORS setup is needed. `API_URL` is read when you build the frontend.
 
@@ -109,6 +111,13 @@ The browser only talks to Next.js. `frontend/next.config.ts` forwards `/api/*` t
 | 08 | Bhairab Thread | Reject | R4: no TIN or BIN (also N1) |
 | 09 | Dhaleshwari Poly | Needs a person to check | C3 open payment terms, C6 line total 322,000 should be 320,000 |
 | 10 | Kushiyara Box | Reject | R5: 60 days delivery (also C5, VAT included) |
+
+## Results list behaviour
+
+- **Reload clears the results.** The list lives in the browser tab's memory (`frontend/src/lib/session.tsx`), so reloading the window starts empty. Rows already saved on the server (memory or Supabase) are not shown again; use **Delete** to remove them from the server too.
+- **Delete** on a row (or on the detail page) removes the result and its person review.
+- **Needs a person to check** rows have **Accept** and **Reject** buttons. The choice can be changed any time, or taken back with **Undo**. The reason is optional.
+- **Why, with the exact text** column: every reason for a Reject (or a check) is listed with the quote from the document that supports it.
 
 ## Notes
 

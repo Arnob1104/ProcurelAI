@@ -90,11 +90,28 @@ class SupabaseStore:
         return self._to_stored(res.data[0]) if res.data else None
 
     def add_review(self, analysis_id: str, decision: str, note: str, reviewer: Optional[str]) -> StoredAnalysis:
-        self._wrap("saving the review", lambda: self.db.table("human_reviews").insert(
-            {"analysis_id": analysis_id, "decision": decision, "note": note, "reviewer": reviewer}).execute())
+        self._wrap("saving the review", lambda: self.db.table("human_reviews").upsert(
+            {"analysis_id": analysis_id, "decision": decision, "note": note, "reviewer": reviewer},
+            on_conflict="analysis_id").execute())
         self._wrap("closing the analysis", lambda: self.db.table("analyses").update(
             {"status": "resolved", "final_decision": decision}).eq("id", analysis_id).execute())
         row = self.get_analysis(analysis_id)
         if row is None:
             raise KeyError("Analysis not found.")
         return row
+
+    def clear_review(self, analysis_id: str) -> StoredAnalysis:
+        self._wrap("removing the review", lambda: self.db.table("human_reviews").delete().eq("analysis_id", analysis_id).execute())
+        row = self.get_analysis(analysis_id)
+        if row is None:
+            raise KeyError("Analysis not found.")
+        self._wrap("reopening the analysis", lambda: self.db.table("analyses").update(
+            {"status": "awaiting_person", "final_decision": row.decision}).eq("id", analysis_id).execute())
+        row = self.get_analysis(analysis_id)
+        assert row is not None
+        return row
+
+    def delete_analysis(self, analysis_id: str) -> bool:
+        # human_reviews rows go too (on delete cascade in schema.sql).
+        res = self._wrap("deleting the analysis", lambda: self.db.table("analyses").delete().eq("id", analysis_id).execute())
+        return bool(res.data)

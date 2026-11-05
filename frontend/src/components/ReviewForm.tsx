@@ -1,13 +1,14 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useSession } from "@/lib/session";
+import type { StoredAnalysis } from "@/lib/types";
 
-export function ReviewForm({ id }: { id: string }) {
-  const router = useRouter();
-  const [decision, setDecision] = useState<"Approve" | "Reject" | "">("");
-  const [note, setNote] = useState("");
-  const [reviewer, setReviewer] = useState("");
+export function ReviewForm({ row }: { row: StoredAnalysis }) {
+  const session = useSession();
+  const [decision, setDecision] = useState<"Approve" | "Reject" | "">(row.review?.decision ?? "");
+  const [note, setNote] = useState(row.review?.note ?? "");
+  const [reviewer, setReviewer] = useState(row.review?.reviewer ?? "");
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
@@ -17,16 +18,10 @@ export function ReviewForm({ id }: { id: string }) {
     setBusy(true);
     setError(null);
     try {
-      const res = await fetch(`/api/analyses/${id}/review`, {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({ decision, note, reviewer }),
-      });
-      const body = await res.json();
-      if (!res.ok) throw new Error(body.error);
-      router.refresh();
+      await session.decide(row.id, decision, note, reviewer);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Could not save your answer.");
+    } finally {
       setBusy(false);
     }
   }
@@ -53,7 +48,7 @@ export function ReviewForm({ id }: { id: string }) {
       </fieldset>
       <div>
         <label htmlFor="note" className="mb-1 block text-sm font-medium">
-          Reason
+          Reason (optional)
         </label>
         <textarea
           id="note"
@@ -76,8 +71,29 @@ export function ReviewForm({ id }: { id: string }) {
         </p>
       )}
       <button type="submit" disabled={busy} className="rounded-lg bg-indigo px-5 py-2.5 text-sm font-medium text-white hover:bg-ink disabled:opacity-50">
-        Save decision
+        {row.review ? "Save changed decision" : "Save decision"}
       </button>
+      {row.review && (
+        <button
+          type="button"
+          disabled={busy}
+          onClick={async () => {
+            setBusy(true);
+            try {
+              await session.undo(row.id);
+              setDecision("");
+              setNote("");
+            } catch (err) {
+              setError(err instanceof Error ? err.message : "Could not undo.");
+            } finally {
+              setBusy(false);
+            }
+          }}
+          className="ml-3 text-sm text-ink-soft underline underline-offset-2 hover:text-ink"
+        >
+          Undo my decision
+        </button>
+      )}
     </form>
   );
 }

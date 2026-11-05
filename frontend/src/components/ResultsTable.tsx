@@ -85,11 +85,11 @@ export function ResultsTable() {
                     <td className="px-4 py-3">
                       <DecisionPatch decision={r.finalDecision} />
                       {r.decision === "Needs a person to check" && !r.review && <span className="mt-1 block text-xs text-check">Waiting for a person</span>}
-                      {r.review && <span className={`mt-1 block text-xs ${DECISION[r.finalDecision].text}`}>Decided by a person</span>}
+                      {r.review && <span className={`mt-1 block text-xs ${DECISION[r.finalDecision].text}`}>{r.finalDecision === "Approve" ? "Accepted" : "Rejected"} by a person</span>}
                       <PersonDecision row={r} />
                     </td>
                     <td className="max-w-sm px-4 py-3">
-                      <WhyList row={r} />
+                      {!r.review && <WhyList row={r} />}
                     </td>
                     <td className="px-4 py-3 text-right">
                       <DeleteButton id={r.id} />

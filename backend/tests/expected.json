@@ -1,0 +1,12 @@
+{
+  "supplier-pack-01.pdf": { "supplier": "Padma Textile Mills Ltd", "decision": "Approve", "rules": [] },
+  "supplier-pack-02.pdf": { "supplier": "Jamuna Trims and Accessories", "decision": "Approve", "rules": [] },
+  "supplier-pack-03.pdf": { "supplier": "Karnaphuli Yarn Traders", "decision": "Reject", "rules": ["R1"] },
+  "supplier-pack-04.pdf": { "supplier": "Surma Packaging Industries", "decision": "Needs a person to check", "rules": ["C1"] },
+  "supplier-pack-05.pdf": { "supplier": "Meghna Carton Works", "decision": "Reject", "rules": ["R2"] },
+  "supplier-pack-06.pdf": { "supplier": "Teesta Fabrics Ltd", "decision": "Reject", "rules": ["R3"] },
+  "supplier-pack-07.pdf": { "supplier": "Rupsha Zipper Factory", "decision": "Needs a person to check", "rules": ["C2"] },
+  "supplier-pack-08.pdf": { "supplier": "Bhairab Thread and Co", "decision": "Reject", "rules": ["R4", "N1"] },
+  "supplier-pack-09.pdf": { "supplier": "Dhaleshwari Poly Pack", "decision": "Needs a person to check", "rules": ["C3", "C6"] },
+  "supplier-pack-10.pdf": { "supplier": "Kushiyara Box Industries", "decision": "Reject", "rules": ["R5", "C5"] }
+}

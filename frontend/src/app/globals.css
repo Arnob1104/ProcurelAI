@@ -1,0 +1,91 @@
+@import "tailwindcss";
+
+@theme {
+  --font-display: "Bricolage Grotesque Variable", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "Public Sans Variable", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono Variable", ui-monospace, SFMono-Regular, monospace;
+
+  --color-ink: #1b2742;
+  --color-ink-soft: #46526e;
+  --color-paper: #eff2f5;
+  --color-sheet: #ffffff;
+  --color-chalk: #d3d9e2;
+  --color-chalk-deep: #a9b3c4;
+  --color-indigo: #2a3f78;
+  --color-indigo-wash: #e6eaf5;
+
+  --color-approve: #17664a;
+  --color-approve-wash: #e0f1e9;
+  --color-reject: #a52c27;
+  --color-reject-wash: #f8e4e2;
+  --color-check: #8a5507;
+  --color-check-wash: #fbefd9;
+}
+
+html {
+  color-scheme: light;
+}
+
+body {
+  background-color: var(--color-paper);
+  /* Cutting-mat grid, barely there. */
+  background-image:
+    linear-gradient(to right, rgb(27 39 66 / 0.035) 1px, transparent 1px),
+    linear-gradient(to bottom, rgb(27 39 66 / 0.035) 1px, transparent 1px);
+  background-size: 28px 28px;
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3 {
+  font-family: var(--font-display);
+  letter-spacing: -0.015em;
+  line-height: 1.15;
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-indigo);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* A sewn-on patch: the verdict label. The inner dashed line is the stitching. */
+.patch {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  border-radius: 6px;
+  font-family: var(--font-display);
+  font-weight: 650;
+  outline: 1.5px dashed currentColor;
+  outline-offset: -4px;
+}
+
+/* Verbatim text from the document. Monospace here means "exact words". */
+.quote {
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+
+/* The seam: a thread that runs through the fixed steps. */
+.seam-thread {
+  background-image: linear-gradient(to bottom, var(--color-chalk-deep) 55%, transparent 55%);
+  background-size: 2px 9px;
+  background-repeat: repeat-y;
+}
+
+@keyframes sew {
+  from { clip-path: inset(0 0 100% 0); }
+  to { clip-path: inset(0 0 0 0); }
+}
+.seam-draw {
+  animation: sew 1.1s ease-out both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .seam-draw { animation: none; }
+}

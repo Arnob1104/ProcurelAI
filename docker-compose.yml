@@ -1,0 +1,20 @@
+# docker compose up --build   (then open http://localhost:3000)
+# Put your keys in backend/.env first (copy backend/.env.example). Both keys are optional.
+services:
+  backend:
+    build: ./backend
+    env_file:
+      - ./backend/.env
+    ports:
+      - "8000:8000"
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        API_URL: http://backend:8000
+    environment:
+      API_URL: http://backend:8000
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend

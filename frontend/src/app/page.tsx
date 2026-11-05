@@ -8,14 +8,6 @@ import type { Decision, PurchaseRequestItem, StoredAnalysis } from "@/lib/types"
 
 export const dynamic = "force-dynamic";
 
-function Chip({ ok, children }: { ok: boolean; children: React.ReactNode }) {
-  return (
-    <span className={`rounded-full border px-3 py-1 text-xs font-medium ${ok ? "border-approve/40 bg-approve-wash text-approve" : "border-check/40 bg-check-wash text-check"}`}>
-      {children}
-    </span>
-  );
-}
-
 export default async function Home() {
   let health: Health | null = null;
   let request: PurchaseRequestItem[] = [];
@@ -46,14 +38,6 @@ export default async function Home() {
           <p className="mt-3 max-w-xl text-ink-soft">
             Every quotation is read, compared with the purchase request and checked against the company rules in the same eight steps. When the system is not sure, it stops and asks a person.
           </p>
-        </div>
-        <div className="flex flex-wrap gap-2">
-          {health && (
-            <>
-              <Chip ok={health.storage === "supabase"}>{health.storage === "supabase" ? "Storage: Supabase" : "Storage: temporary, lost on restart"}</Chip>
-              <Chip ok={health.ai.enabled}>{health.ai.enabled ? `AI: Groq ${health.ai.model}` : "AI: off, fixed reader only"}</Chip>
-            </>
-          )}
         </div>
       </header>
 

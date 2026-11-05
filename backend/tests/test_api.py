@@ -49,7 +49,6 @@ async def test_full_flow_with_person_review(client):
     assert waiting["result"]["comparison"][0]["qtyDiffPercent"] == "-17.5"
 
     url = f"/api/analyses/{waiting['id']}/review"
-    assert (await client.post(url, json={"decision": "Approve", "note": "ok"})).status_code == 400
     assert (await client.post(url, json={"decision": "Maybe", "note": "long enough"})).status_code == 400
     ok = await client.post(f"/api/analyses/{by_file['supplier-pack-01.pdf']['id']}/review",
                            json={"decision": "Reject", "note": "trying to override"})
@@ -57,8 +56,15 @@ async def test_full_flow_with_person_review(client):
 
     done = await client.post(url, json={"decision": "Approve", "note": "Supplier confirmed by phone.", "reviewer": "Nasrin"})
     assert done.status_code == 200 and done.json()["finalDecision"] == "Approve"
-    again = await client.post(url, json={"decision": "Reject", "note": "changing my mind"})
-    assert again.status_code == 409
+    # a person can change their answer, with or without a written reason
+    again = await client.post(url, json={"decision": "Reject"})
+    assert again.status_code == 200 and again.json()["finalDecision"] == "Reject"
+    assert (await client.post(url, json={"decision": "Approve", "note": "Supplier confirmed by phone."})).json()["finalDecision"] == "Approve"
+    # undo puts it back to waiting
+    undone = await client.delete(url)
+    assert undone.status_code == 200 and undone.json()["row"]["status"] == "awaiting_person"
+    assert (await client.delete(url)).status_code == 409
+    assert (await client.post(url, json={"decision": "Approve", "note": "Supplier confirmed by phone.", "reviewer": "Nasrin"})).status_code == 200
 
     got = (await client.get(f"/api/analyses/{waiting['id']}")).json()
     assert got["status"] == "resolved" and got["decision"] == "Needs a person to check"
@@ -83,3 +89,13 @@ async def test_csv_upload_and_errors(client):
 
 async def test_unknown_analysis_is_404(client):
     assert (await client.get("/api/analyses/does-not-exist")).status_code == 404
+
+
+async def test_delete_removes_result_and_review(client):
+    await client.post("/api/purchase-request", json={"sample": True})
+    a = (await client.post("/api/analyze", json={"sample": "supplier-pack-07.pdf"})).json()["id"]
+    await client.post(f"/api/analyses/{a}/review", json={"decision": "Approve"})
+    assert (await client.delete(f"/api/analyses/{a}")).status_code == 200
+    assert (await client.get(f"/api/analyses/{a}")).status_code == 404
+    assert (await client.delete(f"/api/analyses/{a}")).status_code == 404
+    assert (await client.get("/api/analyses")).json() == []
